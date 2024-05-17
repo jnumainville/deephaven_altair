@@ -3,7 +3,8 @@ from __future__ import annotations
 import io
 from typing import Any
 from deephaven.plugin.object_type import MessageStream, BidirectionalObjectType
-from altair.vegalite.v5.api import Chart
+from altair import SchemaBase
+from altair.vegalite.v5 import VConcatChart, HConcatChart, ConcatChart, FacetChart, RepeatChart
 from altair.utils.schemapi import SchemaValidationError
 
 
@@ -55,6 +56,20 @@ class DeephavenAltairMessageStream(MessageStream):
         """
         pass
 
+
+def is_compound_chart(obj: Any) -> bool:
+    """
+    Check if the object is a compound chart
+
+    Args:
+        obj: The object to check
+
+    Returns:
+        True if the object is a compound chart, False otherwise
+    """
+    return isinstance(obj, (VConcatChart, HConcatChart, ConcatChart, FacetChart, RepeatChart))
+
+
 # The object type that will be registered with the plugin system.
 # The object is bidirectional, meaning it can send messages to and from the client.
 # A MessageStream is created for each object that is created. This needs to be saved and tied to the object.
@@ -69,13 +84,14 @@ class DeephavenAltairType(BidirectionalObjectType):
         return "DeephavenAltair"
 
     def is_type(self, obj: Any) -> bool:
-        if isinstance(obj, Chart):
+        if isinstance(obj, SchemaBase):
             try:
                 obj.to_json()
             except SchemaValidationError:
                 # this figure can be ignored as it may not be ready yet
                 return False
-        return isinstance(obj, Chart)
+        # currently, we don't support compound charts (besides layering)
+        return isinstance(obj, SchemaBase) and not is_compound_chart(obj)
 
     def create_client_connection(
         self, obj: object, connection: MessageStream

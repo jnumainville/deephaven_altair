@@ -2,7 +2,7 @@
 
 This is a Python plugin to display Vega-Altair charts in Deephaven, generated from a [deephaven-plugin](https://github.com/deephaven/deephaven-plugins) template.
 
-It is a work in progress, but works for basic charts (not compound charts).
+It is a work in progress, but works well for basic and layered charts, but not concat, repeat, or facet charts at this time.
 
 ## Building the Plugin
 
